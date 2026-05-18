@@ -33,15 +33,9 @@ class ReadyToWriteTestTool(Tool):
     def get_parameters(self) -> list[ToolParameter]:
         return [
             ToolParameter(
-                name="thinking",
-                type="string",
-                description="Your structured reasoning: PROGRESS, CURRENT HYPOTHESIS, TOOL CHOICE JUSTIFICATION, EXPECTED OUTCOME & NEXT STEP",
-                required=True,
-            ),
-            ToolParameter(
                 name="summary",
                 type="string",
-                description="Detailed summary covering: bug location, root cause, expected vs actual behavior, reproduction steps, reference tests examined, and test plan. Must be 200-2000 chars.",
+                description="Detailed summary covering: bug location (file paths and functions), root cause, expected vs actual behavior, reproduction steps, reference tests examined, and test plan. Must be 200-2000 chars.",
                 required=True,
             ),
         ]

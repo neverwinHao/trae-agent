@@ -11,6 +11,7 @@ from trae_agent.tools.json_edit_tool import JSONEditTool
 from trae_agent.tools.sequential_thinking_tool import SequentialThinkingTool
 from trae_agent.tools.ready_to_write_test_tool import ReadyToWriteTestTool
 from trae_agent.tools.task_done_tool import TaskDoneTool
+from trae_agent.tools.view_only_edit_tool import ViewOnlyEditorTool
 
 __all__ = [
     "Tool",
@@ -24,11 +25,13 @@ __all__ = [
     "TaskDoneTool",
     "CKGTool",
     "ReadyToWriteTestTool",
+    "ViewOnlyEditorTool",
 ]
 
 tools_registry: dict[str, type[Tool]] = {
     "bash": BashTool,
     "str_replace_based_edit_tool": TextEditorTool,
+    "view_only_edit_tool": ViewOnlyEditorTool,
     "json_edit_tool": JSONEditTool,
     "sequentialthinking": SequentialThinkingTool,
     "task_done": TaskDoneTool,

@@ -130,10 +130,23 @@ You are NOT expected to fix the bug — only to write tests that demonstrate it.
 
 ## Workflow
 Your work has two phases:
-1. **Exploration Phase** (current): Use bash and str_replace_based_edit_tool to understand the bug, locate the relevant code, and reproduce the issue. When you have a clear understanding, call `ready_to_write_test` to transition.
-2. **Test Writing Phase**: Write and verify your tests using str_replace_based_edit_tool and bash.
+1. **Exploration Phase** (current): Use `bash` and `str_replace_based_edit_tool` (view only) to understand the bug, locate the relevant code, and reproduce the issue. When you have a clear understanding, call the `ready_to_write_test` tool to transition.
+2. **Test Writing Phase**: Write and verify your tests using str_replace_based_edit_tool (full editing) and bash.
 
-You MUST call `ready_to_write_test` before you start creating test files.
+**CRITICAL**: You MUST call the `ready_to_write_test` tool before you can create or edit any files. In this exploration phase, you CANNOT create or modify files. The `str_replace_based_edit_tool` only supports the `view` command right now.
+
+## Your Available Tools in This Phase
+
+1. **str_replace_based_edit_tool** — VIEW ONLY. Use `command: "view"` to read files and list directories. No create/edit/insert allowed.
+2. **bash** — Run shell commands to explore the codebase (grep, find, cat, python scripts, etc.)
+3. **sequentialthinking** — Structured reasoning to plan your approach.
+4. **ready_to_write_test** — Call this tool when you have finished exploring and are ready to write tests. You MUST provide a detailed `summary` parameter describing:
+   - Bug location (file paths and functions)
+   - Root cause analysis
+   - Expected vs actual behavior
+   - How to reproduce the bug
+   - Which existing tests you examined for conventions
+   - Your test plan (what test file to create, what to assert)
 
 ## Mandatory Thinking Protocol
 Use the `sequentialthinking` tool for structured reasoning. Each thinking step MUST contain:
@@ -142,20 +155,14 @@ Use the `sequentialthinking` tool for structured reasoning. Each thinking step M
 3. **TOOL CHOICE JUSTIFICATION**: Explain why the tool you chose is the best fit for your current need.
 4. **EXPECTED OUTCOME & NEXT STEP**: What information do you expect? What will you do next?
 
-File Path Rule: All tools that take a `file_path` as an argument require an **absolute path**. Combine the `[Project root path]` with the file's relative path.
+File Path Rule: All tools that take a `path` or file argument require an **absolute path**. Combine the `[Project root path]` with the file's relative path.
 
 IMPORTANT TIPS:
 1. Start by understanding the bug: read the issue carefully, locate the relevant code.
 2. If the issue includes reproduction code, try running it first to confirm the bug exists.
 3. Look at existing tests in the repository to follow the same patterns and conventions.
 4. When you have a clear understanding of the bug and know what to test, call `ready_to_write_test` to switch to test-writing mode.
-5. Do NOT modify any non-test files. Only create or edit test files.
-6. In exploration phase, use str_replace_based_edit_tool for VIEWING only. Do NOT create test files until you transition.
-
-# GUIDE FOR HOW TO USE "sequential_thinking" TOOL:
-- Your thinking should be thorough. Set total_thoughts to at least 5.
-- Use this tool to break down complex problems and plan your approach.
-- You can run bash commands between thoughts.
+5. Do NOT attempt to create or edit files in this phase — it will fail. You must transition first.
 """
 
 TWOPHASE_SYSTEM_PROMPT_PHASE2 = """You are a senior software engineer writing unit tests to reproduce a reported bug.

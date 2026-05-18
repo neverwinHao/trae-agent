@@ -13,15 +13,15 @@ from trae_agent.utils.config import TraeAgentConfig
 from trae_agent.utils.llm_clients.llm_basics import LLMMessage, LLMResponse
 
 
-# Phase 1: exploration tools
+# Phase 1: exploration only (view-only editor, no file creation/editing)
 PHASE1_TOOL_NAMES = [
-    "str_replace_based_edit_tool",
+    "view_only_edit_tool",
     "bash",
     "sequentialthinking",
     "ready_to_write_test",
 ]
 
-# Phase 2: test writing tools
+# Phase 2: test writing tools (full editing capability)
 PHASE2_TOOL_NAMES = [
     "str_replace_based_edit_tool",
     "bash",
@@ -51,8 +51,28 @@ class TwoPhaseTraeAgent(TraeAgent):
         tool_names: list[str] | None = None,
     ):
         """Create a new task, starting in Phase 1."""
-        # Force phase 1 tools
         self._current_phase = 1
+        # Force phase 1 tools before calling super
+        provider = self._model_config.model_provider.provider
+        self._tools = [
+            tools_registry[tool_name](model_provider=provider)
+            for tool_name in PHASE1_TOOL_NAMES
+        ]
+        # Reset tool caller with phase 1 tools
+        from trae_agent.tools.base import ToolExecutor
+        if self.docker_manager:
+            from trae_agent.tools.docker_tool_executor import DockerToolExecutor
+            original_executor = ToolExecutor(self._tools)
+            self._tool_caller = DockerToolExecutor(
+                original_executor=original_executor,
+                docker_manager=self.docker_manager,
+                docker_tools=["bash", "str_replace_based_edit_tool", "json_edit_tool"],
+                host_workspace_dir=self.docker_config.get("workspace_dir") if self.docker_config else None,
+                container_workspace_dir=self.docker_manager.container_workspace,
+            )
+        else:
+            self._tool_caller = ToolExecutor(self._tools)
+        # Call parent but it won't override tools since self._tools is not empty
         super().new_task(task, extra_args, tool_names=PHASE1_TOOL_NAMES)
 
     @override
@@ -104,9 +124,12 @@ class TwoPhaseTraeAgent(TraeAgent):
         # Check if ready_to_write_test is being called
         phase_transition_call = None
         other_calls = []
+        blocked_calls = []
         for tc in tool_calls:
             if tc.name == "ready_to_write_test":
                 phase_transition_call = tc
+            elif self._current_phase == 1 and tc.name == "task_done":
+                blocked_calls.append(tc)
             else:
                 other_calls.append(tc)
 
@@ -117,6 +140,24 @@ class TwoPhaseTraeAgent(TraeAgent):
         self._update_cli_console(step)
 
         messages: list[LLMMessage] = []
+
+        # Handle blocked calls (e.g. task_done in Phase 1)
+        for tc in blocked_calls:
+            blocked_result = ToolResult(
+                call_id=tc.call_id,
+                name=tc.name,
+                success=False,
+                error=(
+                    "`task_done` is NOT available yet. You are in the EXPLORATION phase. "
+                    "You MUST call the `ready_to_write_test` tool with a summary parameter to transition to the test writing phase first."
+                ),
+                id=tc.id,
+            )
+            messages.append(LLMMessage(role="user", tool_result=blocked_result))
+            if step.tool_results is None:
+                step.tool_results = [blocked_result]
+            else:
+                step.tool_results.append(blocked_result)
 
         if other_calls:
             if self._model_config.parallel_tool_calls:
@@ -173,7 +214,9 @@ class TwoPhaseTraeAgent(TraeAgent):
 
     @override
     def llm_indicates_task_completed(self, llm_response: LLMResponse) -> bool:
-        """Only task_done indicates completion (same as parent TraeAgent)."""
+        """Only task_done in Phase 2 indicates completion."""
         if llm_response.tool_calls is None:
+            return False
+        if self._current_phase == 1:
             return False
         return any(tool_call.name == "task_done" for tool_call in llm_response.tool_calls)
