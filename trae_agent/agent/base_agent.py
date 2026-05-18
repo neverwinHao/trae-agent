@@ -3,22 +3,26 @@
 
 """Base Agent class for LLM-based agents."""
 
+from __future__ import annotations
+
 import contextlib
 import os
 from abc import ABC, abstractmethod
-from typing import Union
+from typing import TYPE_CHECKING, Union
 
 from trae_agent.agent.agent_basics import AgentExecution, AgentState, AgentStep, AgentStepState
-from trae_agent.agent.docker_manager import DockerManager
 from trae_agent.tools import tools_registry
 from trae_agent.tools.base import Tool, ToolCall, ToolExecutor, ToolResult
 from trae_agent.tools.ckg.ckg_database import clear_older_ckg
-from trae_agent.tools.docker_tool_executor import DockerToolExecutor
 from trae_agent.utils.cli import CLIConsole
 from trae_agent.utils.config import AgentConfig, ModelConfig
 from trae_agent.utils.llm_clients.llm_basics import LLMMessage, LLMResponse
 from trae_agent.utils.llm_clients.llm_client import LLMClient
 from trae_agent.utils.trajectory_recorder import TrajectoryRecorder
+
+if TYPE_CHECKING:
+    from trae_agent.agent.docker_manager import DockerManager
+    from trae_agent.tools.docker_tool_executor import DockerToolExecutor
 
 
 class BaseAgent(ABC):
@@ -47,6 +51,9 @@ class BaseAgent(ABC):
         self.docker_manager: DockerManager | None = None
         original_tool_executor = ToolExecutor(self._tools)
         if docker_config:
+            from trae_agent.agent.docker_manager import DockerManager
+            from trae_agent.tools.docker_tool_executor import DockerToolExecutor
+
             project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
             # tools_dir = os.path.join(project_root, 'tools')
 

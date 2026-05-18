@@ -11,6 +11,8 @@ from trae_agent.utils.llm_clients.openai_compatible_base import (
     ProviderConfig,
 )
 
+from azure.identity import DefaultAzureCredential, AzureCliCredential, get_bearer_token_provider
+
 
 class AzureProvider(ProviderConfig):
     """Azure OpenAI provider configuration."""
@@ -22,11 +24,25 @@ class AzureProvider(ProviderConfig):
         if not base_url:
             raise ValueError("base_url is required for AzureClient")
 
-        return openai.AzureOpenAI(
-            azure_endpoint=base_url,
-            api_version=api_version,
-            api_key=api_key,
-        )
+        if "aoai" in base_url:
+            identity_id = api_key
+            gpt_endpoint = base_url
+            token_provider = get_bearer_token_provider(DefaultAzureCredential(), "https://cognitiveservices.azure.com/.default")
+            api_version = "2024-12-01-preview"
+            client = openai.AzureOpenAI(azure_endpoint=gpt_endpoint, azure_ad_token_provider=token_provider, api_version=api_version)        
+        elif "cloudgpt" in base_url:
+            api_scope_base = "api://feb7b661-cac7-44a8-8dc1-163b63c23df2"
+            scope = api_scope_base + "/.default"
+            tenant_id = api_key
+            token_provider = get_bearer_token_provider(AzureCliCredential(tenant_id=tenant_id), scope)
+            client = openai.AzureOpenAI(api_version=api_version, base_url=gpt_endpoint, azure_ad_token_provider=token_provider)
+        else:
+            client = openai.OpenAI(
+                api_key="mock_api_key_for_azure_client",
+                base_url=base_url
+            )
+
+        return client
 
     def get_service_name(self) -> str:
         """Get the service name for retry logging."""

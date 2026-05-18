@@ -1,0 +1,45 @@
+agents:
+    trae_agent:
+        enable_lakeview: false
+        model: trae_agent_model
+        max_steps: 200
+        tools:
+            - bash
+            - str_replace_based_edit_tool
+            - sequentialthinking
+            - task_done
+allow_mcp_servers:
+    - playwright
+mcp_servers:
+    playwright:
+        command: npx
+        args:
+            - "@playwright/mcp@0.0.27"
+lakeview:
+    model: lakeview_model
+
+model_providers:
+    azure:
+        api_key: "66c3d9d1-d696-4d7c-aebe-80798f402e9c"
+        provider: azure
+        base_url: "https://aoai4datadev.openai.azure.com/"
+        api_version: "2024-12-01-preview"
+models:
+    trae_agent_model:
+        model_provider: azure
+        model: gpt-5_4
+        max_completion_tokens: 16384
+        temperature: 0.5
+        top_p: 1
+        top_k: 0
+        max_retries: 10
+        parallel_tool_calls: true
+    lakeview_model:
+        model_provider: azure
+        model: gpt-5_4
+        max_completion_tokens: 16384
+        temperature: 0.5
+        top_p: 1
+        top_k: 0
+        max_retries: 10
+        parallel_tool_calls: true

@@ -95,12 +95,14 @@ class OpenAICompatibleClient(BaseLLMClient):
             model=model_config.model,
             messages=self.message_history,
             tools=tool_schemas if tool_schemas else openai.NOT_GIVEN,
+            tool_choice="required" if tool_schemas else openai.NOT_GIVEN,
             temperature=model_config.temperature
             if "o3" not in model_config.model
             and "o4-mini" not in model_config.model
             and "gpt-5" not in model_config.model
             else openai.NOT_GIVEN,
             top_p=model_config.top_p,
+            reasoning_effort="high" if "o3" in model_config.model or "o4-mini" in model_config.model or "gpt-5" in model_config.model else openai.NOT_GIVEN,
             extra_headers=extra_headers if extra_headers else None,
             n=1,
             **token_params,

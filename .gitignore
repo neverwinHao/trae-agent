@@ -186,3 +186,8 @@ trae_config.yaml
 
 # Patch selection python binary
 py312/
+results/
+results/
+trae-workspace/
+*.tar
+evaluation/SWE-bench/

@@ -178,17 +178,24 @@ class TraeAgent(BaseAgent):
         return None
 
     def get_git_diff(self) -> str:
-        """Get the git diff of the project."""
+        """Get the git diff of the project, including untracked new files."""
         pwd = os.getcwd()
         if not os.path.isdir(self.project_path):
             return ""
         os.chdir(self.project_path)
         try:
+            # Stage all changes (including new untracked files) so they are
+            # visible to git diff.  Without this, newly created files would
+            # never appear in the diff and the patch would be empty.
+            subprocess.check_output(["git", "add", "-A"])
+
             if not self.base_commit:
-                stdout = subprocess.check_output(["git", "--no-pager", "diff"]).decode()
+                stdout = subprocess.check_output(
+                    ["git", "--no-pager", "diff", "--staged"]
+                ).decode()
             else:
                 stdout = subprocess.check_output(
-                    ["git", "--no-pager", "diff", self.base_commit, "HEAD"]
+                    ["git", "--no-pager", "diff", self.base_commit, "--staged"]
                 ).decode()
         except (subprocess.CalledProcessError, FileNotFoundError):
             stdout = ""
@@ -237,8 +244,8 @@ class TraeAgent(BaseAgent):
         """Enhanced task completion detection."""
         if self.must_patch == "true":
             model_patch = self.get_git_diff()
-            patch = self.remove_patches_to_tests(model_patch)
-            if not patch.strip():
+            # patch = self.remove_patches_to_tests(model_patch)
+            if not model_patch.strip():
                 return False
 
         return True

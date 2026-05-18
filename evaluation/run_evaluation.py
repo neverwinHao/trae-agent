@@ -4,6 +4,7 @@
 import argparse
 import io
 import json
+import os
 import shutil
 import subprocess
 import tarfile
@@ -18,6 +19,35 @@ from docker.models.containers import Container
 from tqdm import tqdm
 
 from .utils import BENCHMARK_CONFIG, docker_exec
+
+
+def _detect_azure_arc() -> dict[str, Any] | None:
+    """
+    Detect Azure Arc environment and return extra Docker kwargs
+    needed to pass through Arc managed identity credentials.
+
+    Returns None if not an Arc environment.
+    """
+    identity_endpoint = os.environ.get("IDENTITY_ENDPOINT", "")
+    imds_endpoint = os.environ.get("IMDS_ENDPOINT", "")
+    arc_token_dir = "/var/opt/azcmagent"
+
+    if "localhost:40342" not in identity_endpoint:
+        return None
+    if not os.path.isdir(arc_token_dir):
+        return None
+
+    print("Detected Azure Arc environment — injecting Arc credentials into containers.")
+    return {
+        "network_mode": "host",
+        "environment": {
+            "IDENTITY_ENDPOINT": identity_endpoint,
+            "IMDS_ENDPOINT": imds_endpoint,
+        },
+        "volumes": {
+            arc_token_dir: {"bind": arc_token_dir, "mode": "ro"},
+        },
+    }
 
 
 class BenchmarkEvaluation:
@@ -69,7 +99,7 @@ class BenchmarkEvaluation:
         self.run_id = run_id
         self.max_workers = max_workers
         if instance_ids is None:
-            instance_ids = [instance["instance_id"] for instance in self.dataset]
+            self.instance_ids = [instance["instance_id"] for instance in self.dataset]
         else:
             self.instance_ids = instance_ids
 
@@ -88,6 +118,8 @@ class BenchmarkEvaluation:
         self.task_id = f"{self.benchmark}_{self.dataset_name}_{self.run_id}".replace("/", "_")
         self.task_results_dir = self.results_dir / self.task_id
         self.task_results_dir.mkdir(parents=True, exist_ok=True)
+
+        self.azure_arc_config = _detect_azure_arc()
 
         self.pull_images()
 
@@ -227,18 +259,28 @@ class BenchmarkEvaluation:
 
         self.config.problem_statement(instance, instance_result_dir)
 
+        volumes = {
+            instance_result_dir.absolute().as_posix(): {"bind": "/instance-data", "mode": "rw"},
+        }
+        environment = self.docker_env_config.get("experiment_env", None) or {}
+        extra_kwargs: dict[str, Any] = {}
+
+        if self.azure_arc_config:
+            volumes.update(self.azure_arc_config["volumes"])
+            environment.update(self.azure_arc_config["environment"])
+            extra_kwargs["network_mode"] = self.azure_arc_config["network_mode"]
+
         container: Container = self.docker_client.containers.run(
             image_name,
             command="/bin/bash",
             detach=True,
             tty=True,
             stdin_open=True,
-            volumes={
-                instance_result_dir.absolute().as_posix(): {"bind": "/instance-data", "mode": "rw"},
-            },
+            volumes=volumes,
             working_dir="/trae-workspace",
-            environment=self.docker_env_config.get("experiment_env", None),
+            environment=environment or None,
             stream=True,
+            **extra_kwargs,
         )
 
         for fname in ["trae-agent.tar", "uv.tar", "uv_shared.tar", "trae_config.yaml"]:
@@ -276,6 +318,7 @@ class BenchmarkEvaluation:
         Args:
             instance_id: Instance identifier.
         """
+        print(f"[START] Running instance: {instance_id}")
         instance = next((inst for inst in self.dataset if inst["instance_id"] == instance_id), None)
         if instance is None:
             print(f"Instance {instance_id} not found.")
@@ -299,13 +342,14 @@ class BenchmarkEvaluation:
         try:
             return_code, output = docker_exec(container, new_command)
             if return_code is not None and return_code != 0:
-                print("Docker exec error. Error message: {}".format(output))
+                print(f"[FAIL] Instance {instance_id} - Docker exec error. Error message: {output}")
         except Exception:
-            print(f"{command} failed.")
+            print(f"[FAIL] Instance {instance_id} - {command} failed.")
             print(traceback.format_exc())
 
         container.stop()
         container.remove()
+        print(f"[DONE] Finished instance: {instance_id}")
 
     def run_all(self):
         """
