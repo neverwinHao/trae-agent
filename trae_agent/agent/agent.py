@@ -9,6 +9,7 @@ from trae_agent.utils.trajectory_recorder import TrajectoryRecorder
 
 class AgentType(Enum):
     TraeAgent = "trae_agent"
+    TwoPhaseAgent = "two_phase_agent"
 
 
 class Agent:
@@ -43,6 +44,19 @@ class Agent:
                 self.agent_config: AgentConfig = config.trae_agent
 
                 self.agent: TraeAgent = TraeAgent(
+                    self.agent_config, docker_config=docker_config, docker_keep=docker_keep
+                )
+
+                self.agent.set_cli_console(cli_console)
+
+            case AgentType.TwoPhaseAgent:
+                if config.trae_agent is None:
+                    raise ValueError("trae_agent_config is required for TwoPhaseAgent")
+                from .two_phase_agent import TwoPhaseTraeAgent
+
+                self.agent_config = config.trae_agent
+
+                self.agent = TwoPhaseTraeAgent(
                     self.agent_config, docker_config=docker_config, docker_keep=docker_keep
                 )
 

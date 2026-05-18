@@ -67,6 +67,7 @@ class BenchmarkEvaluation:
         run_id: str = "trae-agent",
         max_workers: int = 4,
         instance_ids: list[str] | None = None,
+        agent_type: str = "trae_agent",
     ):
         """
         Initialize the BenchmarkEvaluation class.
@@ -112,6 +113,7 @@ class BenchmarkEvaluation:
         self.working_dir.mkdir(parents=True, exist_ok=True)
 
         self.trae_config_file_name = trae_config_file_name
+        self.agent_type = agent_type
         shutil.copyfile(self.trae_config_file_name, self.working_dir / "trae_config.yaml")
 
         self.results_dir = Path("results")
@@ -336,6 +338,7 @@ class BenchmarkEvaluation:
             f"trae-cli run --file {container_problem_statement_path} "
             f'--working-dir="{working_dir}" '
             f"--config-file trae_config.yaml --must-patch "
+            f"--agent-type {self.agent_type} "
             f"--patch-path {container_patch_file_path} --trajectory-file {container_traj_path}"
         )
         new_command = f"/bin/bash -c '{command}'"
@@ -471,6 +474,12 @@ def main():
     argument_parser.add_argument(
         "--max_workers", type=int, default=4, help="Maximum number of parallel workers."
     )
+    argument_parser.add_argument(
+        "--agent-type",
+        type=str,
+        default="trae_agent",
+        help="Agent type to use (trae_agent or two_phase_agent).",
+    )
 
     args = argument_parser.parse_args()
     evaluation = BenchmarkEvaluation(
@@ -483,6 +492,7 @@ def main():
         args.run_id,
         args.max_workers,
         args.instance_ids,
+        args.agent_type,
     )
 
     evaluation.prepare_trae_agent()
