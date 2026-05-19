@@ -68,6 +68,7 @@ class BenchmarkEvaluation:
         max_workers: int = 4,
         instance_ids: list[str] | None = None,
         agent_type: str = "trae_agent",
+        instances_file: str | None = None,
     ):
         """
         Initialize the BenchmarkEvaluation class.
@@ -91,7 +92,12 @@ class BenchmarkEvaluation:
         )
 
         self.benchmark = benchmark
-        self.dataset = self.config.load_dataset(self.dataset_name)
+        if instances_file:
+            import json as _json
+            with open(instances_file) as _f:
+                self.dataset = _json.load(_f)
+        else:
+            self.dataset = self.config.load_dataset(self.dataset_name)
         self.docker_client: DockerClient = from_env()
         self.image_status: dict[Any, Any] = {}
 
@@ -480,6 +486,12 @@ def main():
         default="trae_agent",
         help="Agent type to use (trae_agent or two_phase_agent).",
     )
+    argument_parser.add_argument(
+        "--instances-file",
+        type=str,
+        default=None,
+        help="Path to local JSON file with instances (overrides HuggingFace dataset loading).",
+    )
 
     args = argument_parser.parse_args()
     evaluation = BenchmarkEvaluation(
@@ -493,6 +505,7 @@ def main():
         args.max_workers,
         args.instance_ids,
         args.agent_type,
+        args.instances_file,
     )
 
     evaluation.prepare_trae_agent()
