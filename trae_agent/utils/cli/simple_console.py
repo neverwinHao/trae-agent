@@ -182,6 +182,8 @@ class SimpleCLIConsole(CLIConsole):
     @override
     def print(self, message: str, color: str = "blue", bold: bool = False):
         """Print a message to the console."""
+        from rich.markup import escape
+        message = escape(message)
         message = f"[bold]{message}[/bold]" if bold else message
         message = f"[{color}]{message}[/{color}]"
         self.console.print(message)
