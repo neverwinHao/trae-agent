@@ -87,6 +87,16 @@ class TwoPhaseTraeAgent(TraeAgent):
         self._current_phase = 2
         self._phase_transition_summary = summary
 
+        # Replace system prompt in LLM message history
+        phase2_prompt = self.get_system_prompt()
+        client = self._llm_client.client
+        if hasattr(client, 'message_history') and client.message_history:
+            # Replace the first system message
+            for i, msg in enumerate(client.message_history):
+                if isinstance(msg, dict) and msg.get("role") == "system":
+                    client.message_history[i] = {"role": "system", "content": phase2_prompt}
+                    break
+
         # Replace tools with phase 2 tools
         provider = self._model_config.model_provider.provider
         self._tools = [
