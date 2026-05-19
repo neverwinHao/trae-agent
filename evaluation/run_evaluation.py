@@ -69,6 +69,7 @@ class BenchmarkEvaluation:
         instance_ids: list[str] | None = None,
         agent_type: str = "trae_agent",
         instances_file: str | None = None,
+        output_dir: str | None = None,
     ):
         """
         Initialize the BenchmarkEvaluation class.
@@ -122,7 +123,7 @@ class BenchmarkEvaluation:
         self.agent_type = agent_type
         shutil.copyfile(self.trae_config_file_name, self.working_dir / "trae_config.yaml")
 
-        self.results_dir = Path("results")
+        self.results_dir = Path(output_dir) if output_dir else Path("results")
         self.task_id = f"{self.benchmark}_{self.dataset_name}_{self.run_id}".replace("/", "_")
         self.task_results_dir = self.results_dir / self.task_id
         self.task_results_dir.mkdir(parents=True, exist_ok=True)
@@ -492,6 +493,12 @@ def main():
         default=None,
         help="Path to local JSON file with instances (overrides HuggingFace dataset loading).",
     )
+    argument_parser.add_argument(
+        "--output-dir",
+        type=str,
+        default=None,
+        help="Custom output directory for results (default: results/).",
+    )
 
     args = argument_parser.parse_args()
     evaluation = BenchmarkEvaluation(
@@ -506,6 +513,7 @@ def main():
         args.instance_ids,
         args.agent_type,
         args.instances_file,
+        args.output_dir,
     )
 
     evaluation.prepare_trae_agent()
