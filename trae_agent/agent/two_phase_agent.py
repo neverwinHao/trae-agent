@@ -176,13 +176,15 @@ class TwoPhaseTraeAgent(TraeAgent):
 
             if result.success:
                 self._switch_to_phase2(summary)
-                # Inject new system prompt context
                 transition_msg = (
-                    f"Phase transition successful. You are now in TEST WRITING mode.\n\n"
+                    "Phase transition successful. You are now in TEST WRITING mode.\n\n"
                     f"## Your Exploration Summary:\n{summary}\n\n"
-                    f"## New System Instructions:\n{self.get_system_prompt()}\n\n"
-                    f"Available tools: str_replace_based_edit_tool, bash, sequentialthinking, task_done.\n"
-                    f"Now write your reproduction test based on your exploration findings."
+                    "## Available Tools:\n"
+                    "- str_replace_based_edit_tool (full create/view/edit/insert)\n"
+                    "- bash\n"
+                    "- sequentialthinking\n"
+                    "- task_done (call when tests are complete)\n\n"
+                    "Now write your reproduction test based on your exploration findings."
                 )
                 result = ToolResult(
                     call_id=phase_transition_call.call_id,
