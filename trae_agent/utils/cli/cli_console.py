@@ -125,8 +125,6 @@ class CLIConsole(ABC):
 
 def generate_agent_step_table(agent_step: AgentStep) -> Table:
     """Log an agent step to the console."""
-    from rich.markup import escape
-
     color, emoji = AGENT_STATE_INFO.get(agent_step.state, ("white", "❓"))
 
     # Print the step state in a table
@@ -142,7 +140,7 @@ def generate_agent_step_table(agent_step: AgentStep) -> Table:
 
     # Add LLM response row
     if agent_step.llm_response and agent_step.llm_response.content:
-        table.add_row("LLM Response", f"💬 {escape(agent_step.llm_response.content)}")
+        table.add_row("LLM Response", f"💬 {agent_step.llm_response.content}")
 
     # Add tool calls row
     if agent_step.tool_calls:
@@ -159,15 +157,15 @@ def generate_agent_step_table(agent_step: AgentStep) -> Table:
                 if tool_result.call_id == tool_call.call_id:
                     tool_result_str = tool_result.result or ""
                     break
-            tool_call_table.add_row(escape(f"{tool_call.arguments}"), escape(tool_result_str))
+            tool_call_table.add_row(f"{tool_call.arguments}", f"{tool_result_str}")
             table.add_row(tool_call.name, tool_call_table)
 
     # Add reflection row
     if agent_step.reflection:
-        table.add_row("Reflection", f"💭 {escape(agent_step.reflection)}")
+        table.add_row("Reflection", f"💭 {agent_step.reflection}")
 
     # Add error row
     if agent_step.error:
-        table.add_row("Error", f"❌ {escape(agent_step.error)}")
+        table.add_row("Error", f"❌ {agent_step.error}")
 
     return table

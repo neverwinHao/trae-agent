@@ -332,9 +332,7 @@ class RichCLIConsole(CLIConsole):
     def print(self, message: str, color: str = "blue", bold: bool = False):
         """Print a message to the console."""
         if self.app and self.app.execution_log:
-            from rich.markup import escape
-            escaped = escape(message)
-            formatted_message = f"[bold]{escaped}[/bold]" if bold else escaped
+            formatted_message = f"[bold]{message}[/bold]" if bold else message
             formatted_message = f"[{color}]{formatted_message}[/{color}]"
             _ = self.app.execution_log.write(formatted_message)
 
