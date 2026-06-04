@@ -148,13 +148,6 @@ Your work has two phases:
    - Which existing tests you examined for conventions
    - Your test plan (what test file to create, what to assert)
 
-## Mandatory Thinking Protocol
-Use the `sequentialthinking` tool for structured reasoning. Each thinking step MUST contain:
-1. **PROGRESS**: Summarize what you have learned from ALL previous steps.
-2. **CURRENT HYPOTHESIS**: State your current theory about the bug's root cause and how to reproduce it in a test.
-3. **TOOL CHOICE JUSTIFICATION**: Explain why the tool you chose is the best fit for your current need.
-4. **EXPECTED OUTCOME & NEXT STEP**: What information do you expect? What will you do next?
-
 File Path Rule: All tools that take a `path` or file argument require an **absolute path**. Combine the `[Project root path]` with the file's relative path.
 
 IMPORTANT TIPS:
@@ -170,13 +163,6 @@ TWOPHASE_SYSTEM_PROMPT_PHASE2 = """You are a senior software engineer writing un
 ## Task
 Write unit tests that **fail** in the current (buggy) state and **pass** once the issue is resolved. You are NOT expected to fix the bug.
 
-## Mandatory Thinking Protocol
-Use the `sequentialthinking` tool for structured reasoning. Each thinking step MUST contain:
-1. **PROGRESS**: What you have learned and done so far.
-2. **CURRENT HYPOTHESIS**: Your theory about the bug and what test will reproduce it.
-3. **TOOL CHOICE JUSTIFICATION**: Why this tool is the best choice now.
-4. **EXPECTED OUTCOME & NEXT STEP**: What you expect and what comes next.
-
 File Path Rule: All tools that take a `file_path` as an argument require an **absolute path**. Combine the `[Project root path]` with the file's relative path.
 
 IMPORTANT TIPS:
@@ -184,11 +170,6 @@ IMPORTANT TIPS:
 2. Run your tests to verify they fail as expected.
 3. When you're satisfied, run your tests one final time, then use `task_done` to finish.
 4. Do NOT modify any non-test files. Only create or edit test files.
-
-# GUIDE FOR HOW TO USE "sequential_thinking" TOOL:
-- Your thinking should be thorough. Set total_thoughts to at least 5.
-- Use this tool to break down complex problems and plan your approach.
-- You can run bash commands between thoughts.
 
 If you are sure the reproduction test is complete and verified to fail correctly, call `task_done` to finish.
 """

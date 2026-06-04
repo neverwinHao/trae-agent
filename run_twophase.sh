@@ -6,8 +6,26 @@ python -m evaluation.run_evaluation \
   --benchmark SWE-bench \
   --dataset SWE-bench_Verified \
   --config-file test_config.yaml \
-  --run-id gpt5mini-twophase-test \
+  --run-id gpt5mini-twophase-full-run2 \
   --mode expr \
-  --max_workers 1 \
-  --agent-type two_phase_agent \
-  --instance_ids astropy__astropy-12907
+  --max_workers 4 \
+  --agent-type two_phase_agent
+
+
+python -m evaluation.run_evaluation \
+  --benchmark SWE-bench \
+  --dataset SWE-bench_Verified \
+  --config-file test_config.yaml \
+  --run-id gpt5mini-twophase-full-run3 \
+  --mode expr \
+  --max_workers 4 \
+  --agent-type two_phase_agent
+
+python -m evaluation.run_evaluation \
+  --benchmark SWE-bench \
+  --dataset SWE-bench_Verified \
+  --config-file test_config.yaml \
+  --run-id gpt5mini-twophase-full-run4 \
+  --mode expr \
+  --max_workers 4 \
+  --agent-type two_phase_agent

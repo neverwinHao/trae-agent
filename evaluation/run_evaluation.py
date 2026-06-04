@@ -327,6 +327,11 @@ class BenchmarkEvaluation:
         Args:
             instance_id: Instance identifier.
         """
+        patch_path = self.task_results_dir / instance_id / f"{instance_id}.patch"
+        if patch_path.exists() and patch_path.stat().st_size > 0:
+            print(f"[SKIP] Instance {instance_id} - patch already exists.")
+            return
+
         print(f"[START] Running instance: {instance_id}")
         instance = next((inst for inst in self.dataset if inst["instance_id"] == instance_id), None)
         if instance is None:
