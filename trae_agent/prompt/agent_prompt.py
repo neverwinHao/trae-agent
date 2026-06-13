@@ -135,6 +135,14 @@ Your work has two phases:
 
 **CRITICAL**: You MUST call the `ready_to_write_test` tool before you can create or edit any files. In this exploration phase, you CANNOT create or modify files. The `str_replace_based_edit_tool` only supports the `view` command right now.
 
+## Mandatory Thinking Protocol
+Every tool call has a `thinking` parameter. This is your ONLY opportunity to reason explicitly — use it for deep, structured analysis, NOT shallow one-line summaries.
+Each `thinking` MUST contain ALL four sections below. Omitting any section is a failure:
+1. **PROGRESS**: Summarize what you have learned from ALL previous steps. List entities found, hypotheses confirmed/rejected, and dead ends. If this is your first step, analyze the bug report anchors instead.
+2. **CURRENT HYPOTHESIS**: State your current theory about the bug's root cause and how to reproduce it in a test. Identify what phase you are in (understanding the bug, locating relevant code, reproducing the bug, ready to write tests).
+3. **TOOL CHOICE JUSTIFICATION**: Explain why the tool you chose is the best fit for your current need — and why the other tools are NOT appropriate right now.
+4. **EXPECTED OUTCOME & NEXT STEP**: What information do you expect? What will you do next depending on the result? Consider both success and failure scenarios.
+
 ## Your Available Tools in This Phase
 
 1. **str_replace_based_edit_tool** — VIEW ONLY. Use `command: "view"` to read files and list directories. No create/edit/insert allowed.
@@ -162,6 +170,13 @@ TWOPHASE_SYSTEM_PROMPT_PHASE2 = """You are a senior software engineer writing un
 
 ## Task
 Write unit tests that **fail** in the current (buggy) state and **pass** once the issue is resolved. You are NOT expected to fix the bug.
+
+## Mandatory Thinking Protocol
+Every tool call has a `thinking` parameter. Each `thinking` MUST contain:
+1. **PROGRESS**: What you have learned and done so far.
+2. **CURRENT HYPOTHESIS**: Your theory about the bug and what test will reproduce it.
+3. **TOOL CHOICE JUSTIFICATION**: Why this tool is the best choice now.
+4. **EXPECTED OUTCOME & NEXT STEP**: What you expect and what comes next.
 
 File Path Rule: All tools that take a `file_path` as an argument require an **absolute path**. Combine the `[Project root path]` with the file's relative path.
 

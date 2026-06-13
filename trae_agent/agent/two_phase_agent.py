@@ -9,6 +9,7 @@ from trae_agent.agent.trae_agent import TraeAgent
 from trae_agent.prompt.agent_prompt import TWOPHASE_SYSTEM_PROMPT_PHASE1, TWOPHASE_SYSTEM_PROMPT_PHASE2
 from trae_agent.tools import tools_registry
 from trae_agent.tools.base import Tool, ToolCall, ToolResult
+from trae_agent.tools.thinking_wrapper import ThinkingToolWrapper
 from trae_agent.utils.config import TraeAgentConfig
 from trae_agent.utils.llm_clients.llm_basics import LLMMessage, LLMResponse
 
@@ -55,7 +56,7 @@ class TwoPhaseTraeAgent(TraeAgent):
         # Force phase 1 tools before calling super
         provider = self._model_config.model_provider.provider
         self._tools = [
-            tools_registry[tool_name](model_provider=provider)
+            ThinkingToolWrapper(tools_registry[tool_name](model_provider=provider))
             for tool_name in PHASE1_TOOL_NAMES
         ]
         # Reset tool caller with phase 1 tools
@@ -100,7 +101,7 @@ class TwoPhaseTraeAgent(TraeAgent):
         # Replace tools with phase 2 tools
         provider = self._model_config.model_provider.provider
         self._tools = [
-            tools_registry[tool_name](model_provider=provider)
+            ThinkingToolWrapper(tools_registry[tool_name](model_provider=provider))
             for tool_name in PHASE2_TOOL_NAMES
         ]
         # Reset tool caller
