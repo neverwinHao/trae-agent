@@ -35,7 +35,15 @@ class ReadyToWriteTestTool(Tool):
             ToolParameter(
                 name="summary",
                 type="string",
-                description="Detailed summary covering: bug location (file paths and functions), root cause, expected vs actual behavior, reproduction steps, reference tests examined, and test plan. Must be 200-2000 chars.",
+                description=(
+                    "A detailed summary of your exploration findings. MUST address ALL six aspects below:\n"
+                    "1. BUG LOCATION: The exact file paths and function/method names where the bug originates.\n"
+                    "2. ROOT CAUSE: A clear explanation of WHY the bug occurs (the logical error or missing handling).\n"
+                    "3. EXPECTED vs ACTUAL BEHAVIOR: What the correct behavior should be, and what the buggy code actually produces.\n"
+                    "4. REPRODUCTION: The minimal steps or inputs needed to trigger the bug.\n"
+                    "5. EXISTING TESTS EXAMINED: Which test files/classes you looked at, and what conventions they follow (framework, naming, imports, fixtures).\n"
+                    "6. TEST PLAN: Exactly what test file to create, what test functions to write, and what assertions they will make to demonstrate the bug."
+                ),
                 required=True,
             ),
         ]
