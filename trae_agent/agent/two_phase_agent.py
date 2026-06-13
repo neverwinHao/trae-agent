@@ -181,7 +181,14 @@ class TwoPhaseTraeAgent(TraeAgent):
 
         # Handle phase transition
         if phase_transition_call:
-            summary = str(phase_transition_call.arguments.get("summary", ""))
+            # Build summary from 6 structured fields
+            args = phase_transition_call.arguments
+            summary_parts = []
+            for field in ["bug_location", "root_cause", "expected_and_actual", "reproduction", "existing_tests", "test_plan"]:
+                val = args.get(field, "")
+                if val:
+                    summary_parts.append(f"**{field.upper()}**: {val}")
+            summary = "\n\n".join(summary_parts)
             # Execute the tool to get its response
             result = await self._tool_caller.execute_tool_call(phase_transition_call)
 

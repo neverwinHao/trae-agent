@@ -25,42 +25,63 @@ class ReadyToWriteTestTool(Tool):
             "Signal that you have finished exploring and are ready to write tests. "
             "You MUST call this tool before creating or editing test files. "
             "After calling this tool, your available tools will switch to test-writing mode. "
-            "Your summary should include: bug location, root cause, expected vs actual behavior, "
-            "reproduction steps, reference tests examined, and test plan."
+            "You must fill in ALL six required parameters to demonstrate thorough understanding of the bug."
         )
 
     @override
     def get_parameters(self) -> list[ToolParameter]:
         return [
             ToolParameter(
-                name="summary",
+                name="bug_location",
                 type="string",
-                description=(
-                    "A detailed summary of your exploration findings. MUST address ALL six aspects below:\n"
-                    "1. BUG LOCATION: The exact file paths and function/method names where the bug originates.\n"
-                    "2. ROOT CAUSE: A clear explanation of WHY the bug occurs (the logical error or missing handling).\n"
-                    "3. EXPECTED vs ACTUAL BEHAVIOR: What the correct behavior should be, and what the buggy code actually produces.\n"
-                    "4. REPRODUCTION: The minimal steps or inputs needed to trigger the bug.\n"
-                    "5. EXISTING TESTS EXAMINED: Which test files/classes you looked at, and what conventions they follow (framework, naming, imports, fixtures).\n"
-                    "6. TEST PLAN: Exactly what test file to create, what test functions to write, and what assertions they will make to demonstrate the bug."
-                ),
+                description="The exact file paths and function/method names where the bug originates. Include line numbers if known.",
+                required=True,
+            ),
+            ToolParameter(
+                name="root_cause",
+                type="string",
+                description="A clear explanation of WHY the bug occurs — the logical error, missing handling, or incorrect assumption in the code.",
+                required=True,
+            ),
+            ToolParameter(
+                name="expected_and_actual",
+                type="string",
+                description="What the correct behavior should be vs. what the buggy code actually produces. Be specific with values/types/exceptions.",
+                required=True,
+            ),
+            ToolParameter(
+                name="reproduction",
+                type="string",
+                description="The minimal steps, inputs, or code snippet needed to trigger the bug.",
+                required=True,
+            ),
+            ToolParameter(
+                name="existing_tests",
+                type="string",
+                description="Which test files/classes you examined and what conventions they follow (framework, naming, imports, directory structure, fixtures).",
+                required=True,
+            ),
+            ToolParameter(
+                name="test_plan",
+                type="string",
+                description="Exactly what test file to create, what test functions to write, and what assertions they will make to demonstrate the bug.",
                 required=True,
             ),
         ]
 
     @override
     async def execute(self, arguments: ToolCallArguments) -> ToolExecResult:
-        summary = arguments.get("summary", "")
-        if not summary or len(str(summary)) < 50:
+        required_fields = ["bug_location", "root_cause", "expected_and_actual", "reproduction", "existing_tests", "test_plan"]
+        missing = [f for f in required_fields if not arguments.get(f) or len(str(arguments.get(f, ""))) < 20]
+        if missing:
             return ToolExecResult(
-                error="Summary too short. Provide a detailed summary (200-2000 chars) of your exploration findings.",
+                error=f"Insufficient detail in fields: {missing}. Each field must have at least 20 characters of substantive content.",
                 error_code=-1,
             )
         return ToolExecResult(
             output=(
                 "Phase transition successful. You are now in TEST WRITING mode.\n"
                 "Available tools: str_replace_based_edit_tool, bash, sequentialthinking, task_done.\n"
-                "RPG/exploration tools are no longer available.\n"
-                "Write your reproduction test now."
+                "Write your reproduction test now based on your analysis above."
             )
         )

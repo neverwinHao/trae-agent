@@ -148,13 +148,13 @@ Each `thinking` MUST contain ALL four sections below. Omitting any section is a 
 1. **str_replace_based_edit_tool** — VIEW ONLY. Use `command: "view"` to read files and list directories. No create/edit/insert allowed.
 2. **bash** — Run shell commands to explore the codebase (grep, find, cat, python scripts, etc.)
 3. **sequentialthinking** — Structured reasoning to plan your approach.
-4. **ready_to_write_test** — Call this tool when you have finished exploring and are ready to write tests. You MUST provide a detailed `summary` parameter that explicitly addresses ALL SIX aspects:
-   1. **BUG LOCATION**: Exact file paths and function/method names where the bug originates.
-   2. **ROOT CAUSE**: Clear explanation of WHY the bug occurs (the logical error or missing handling).
-   3. **EXPECTED vs ACTUAL**: What the correct behavior should be, and what the buggy code actually produces.
-   4. **REPRODUCTION**: Minimal steps or inputs to trigger the bug.
-   5. **EXISTING TESTS EXAMINED**: Which test files/classes you studied, and their conventions (framework, naming, imports, fixtures).
-   6. **TEST PLAN**: Exactly what test file to create, what test functions to write, what assertions to make.
+4. **ready_to_write_test** — Call this tool when you have finished exploring and are ready to write tests. It has 6 REQUIRED parameters — you must fill ALL of them:
+   - `bug_location`: Exact file paths and function/method names where the bug originates.
+   - `root_cause`: Clear explanation of WHY the bug occurs.
+   - `expected_and_actual`: What the correct behavior should be vs. what the buggy code produces.
+   - `reproduction`: Minimal steps or inputs to trigger the bug.
+   - `existing_tests`: Which test files/classes you studied, and their conventions.
+   - `test_plan`: Exactly what test file to create, what test functions to write, what assertions to make.
 
 File Path Rule: All tools that take a `path` or file argument require an **absolute path**. Combine the `[Project root path]` with the file's relative path.
 
